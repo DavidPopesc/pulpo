@@ -21,7 +21,7 @@ import { useDictationToolbarStyle } from '../features/chat/dictationMotion';
 import { setComposerSelection } from '../features/chat/composerSelection';
 import { responseMetaLabel } from '../features/chat/responseCost';
 import { ToolImagePreview } from '../components/ToolImagePreview';
-import { localComposerDraftId, mergePendingAttachments } from '@pulpo/client-core';
+import { PUPO_HEIGHT, localComposerDraftId, mergePendingAttachments, pupoMoodForMessage } from '@pulpo/client-core';
 import { DevicesScreen } from '../components/Devices';
 import { collapseIntermediateReplies, collapsedWorkDurationMs, initialActivityTiming } from '@pulpo/client-core';
 import { mobileShelf, durableShelfAttachments, shelfComposerAttachments } from '../features/chat/shelf';
@@ -239,6 +239,7 @@ import { AssistantMarkdown } from '../features/quiz/AssistantMarkdown';
 import { QuizComposerContext } from '../features/quiz/composer';
 import { isQuizFileName } from '@pulpo/client-core/quiz';
 import { ModelWarningBanner } from './src/components/ModelWarningBanner';
+import { PUPO_PIXEL, PupoBuddy } from './src/components/PupoBuddy';
 import { AttachmentImageViewer, type AttachmentImagePreviewItem, type AttachmentImageTransitionOrigin } from '../components/AttachmentImageViewer';
 import { useFilesCapabilityRefresh, useFilesEnabled } from '../features/files/availability';
 import { openFilesLinkInApp, parseFilesLink, useFilesLinkInbox } from '../features/files/links';
@@ -6572,6 +6573,11 @@ function ChatView({
     else if (chatId && chatLoaded && measuredTranscriptId.current === chatId && measuredContentHeight.current > 0) onTranscriptReady(chatId);
   }, [chatId, chatLoaded, messages.length, onTranscriptReady]);
   const hasPendingAssistant = messages.some((message) => message.role === 'assistant' && (message.status === 'queued' || message.status === 'streaming'));
+  const pupoMood = useMemo(() => {
+    const active = messages.findLast((message) => message.role === 'assistant' && (message.status === 'queued' || message.status === 'streaming'));
+    if (active) return pupoMoodForMessage({ content: active.text, outputItems: active.outputItems });
+    return assistantStatus === 'idle' ? 'idle' : 'thinking';
+  }, [assistantStatus, messages]);
   const pendingAssistantContent = assistantStatus === 'thinking' && !hasPendingAssistant ? (
     <View style={[styles.assistantRow, styles.transcriptColumn]}>
       <AssistantFrame model={model} sideRail={assistantSideRail} time="now">
@@ -6887,6 +6893,11 @@ function ChatView({
           }}
           style={[styles.composerWrap, styles.chatContent, { paddingHorizontal: Math.max(12, horizontalPadding - 6), paddingBottom: Math.max(insets.bottom, 10) }]}
         >
+            <PupoBuddy
+              mood={pupoMood}
+              reduceMotion={reduceMotion}
+              style={[styles.pupoBuddy, { right: Math.max(12, horizontalPadding - 6) + 20 }]}
+            />
             <ComposerSurface
               interactive
               style={[styles.composer, Platform.OS === 'android' && { borderRadius: 24 }]}
@@ -8069,6 +8080,8 @@ function createChatStyles(COLORS: ChatColors) { return StyleSheet.create({
   composerQueueClip: { overflow: 'hidden' },
   composerQueueContent: { position: 'absolute', top: 0, left: 0, right: 0 },
   composerWrap: { paddingTop: 6 },
+  // Feet rest one point into the composer's top edge.
+  pupoBuddy: { position: 'absolute', top: 6 + 1 - PUPO_HEIGHT * PUPO_PIXEL, zIndex: 1 },
   composer: { minHeight: 108, borderRadius: 28, paddingTop: 8, paddingHorizontal: 10, paddingBottom: 4 },
   messageEditBanner: { flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 6, paddingBottom: 8 },
   speechPlayer: { flexDirection: 'row', alignItems: 'center', gap: 2, paddingBottom: 6, marginBottom: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: COLORS.line },

@@ -1,4 +1,5 @@
-// Pupo, "Original 4 · even" design from the Tomagochi-like Character project.
+// Pupo, the chat buddy that perches on the composer (web and mobile).
+// "Original 4 · even" design from the Tomagochi-like Character project.
 // Pixels: '.' transparent, '1' light, '2' mid, '3' ink, '4' laptop, '5' laptop edge, '6' laptop logo.
 
 export type PupoMood = 'idle' | 'thinking' | 'typing' | 'happy'
@@ -42,7 +43,8 @@ const IDLE = [
 
 const BLINK = IDLE.map((row, y) => y === 6 ? BLANK_EYES : y === 7 ? '..313331133313..' : row)
 
-const HOP = [...IDLE.slice(1, 13), IDLE[12], IDLE[14], IDLE[15]]
+// Body lifted a row with the legs stretched to stay on the ground.
+const HOP = [...IDLE.slice(1, 13), ...IDLE.slice(12, 13), ...IDLE.slice(14)]
 
 const HAPPY = IDLE.map((row, y) => ({
   7: '..313131131313..',

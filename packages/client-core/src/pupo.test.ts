@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PUPO_FRAMES, PUPO_HEIGHT, PUPO_WIDTH, pupoMoodForMessage } from './pupo-sprites'
+import { PUPO_FRAMES, PUPO_HEIGHT, PUPO_WIDTH, pupoMoodForMessage } from './pupo.js'
 
 describe('Pupo buddy', () => {
   it('thinks while reasoning or calling tools and types once answer text streams', () => {

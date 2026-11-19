@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
-import { PUPO_FRAME_MS, PUPO_FRAMES, PUPO_HEIGHT, PUPO_PALETTE, PUPO_WIDTH, type PupoFrame, type PupoMood } from './pupo-sprites'
+import { PUPO_FRAME_MS, PUPO_FRAMES, PUPO_HEIGHT, PUPO_PALETTE, PUPO_WIDTH, type PupoFrame, type PupoMood } from '@pulpo/client-core'
 
 const PIXEL = 3
 const HAPPY_MS = 1600
