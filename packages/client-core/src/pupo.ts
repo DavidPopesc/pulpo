@@ -13,12 +13,12 @@ export const PUPO_PALETTE: Record<string, string> = {
   '6': '#f4f5f7',
 }
 
-export const PUPO_WIDTH = 19
-export const PUPO_HEIGHT = 17
-// Where the 16x16 Pupo sits inside the scene; the free space up and to the left holds the scratching arm.
+export const PUPO_WIDTH = 16
+export const PUPO_HEIGHT = 16
+// Where the 16x16 Pupo sits inside the scene; the free row on top holds the scratch marks.
 // The sprite's last row is always empty, so the feet land on the scene's bottom edge.
-const BODY_X = 3
-const BODY_Y = 2
+const BODY_X = 0
+const BODY_Y = 1
 
 const BLANK_EYES = '..311111111113..'
 
@@ -64,8 +64,10 @@ function lookAt(eyeRows: [number, number], eyeCols: [number, number], mouth?: st
   })
 }
 
-const THINK_LEFT = lookAt([5, 6], [4, 9], '..311133111113..')
-const THINK_UP = lookAt([5, 6], [5, 10], '..311133111113..')
+const THINK_RIGHT = lookAt([5, 6], [7, 11], '..311111133113..')
+const THINK_UP = lookAt([5, 6], [7, 10], '..311111331113..')
+// Eyes shut where the thinking eyes sit, clear of the scratching arm.
+const THINK_BLINK = THINK_UP.map((row, y) => y === 5 ? BLANK_EYES : y === 6 ? '..311113331333..' : row)
 const LOOK_DOWN = lookAt([7, 8], [5, 10])
 
 const LAPTOP = [
@@ -77,28 +79,34 @@ const LAPTOP = [
 const LAPTOP_BASE = ['5555555555555555']
 const HAND = ['.33.', '3223', '3223']
 
-// A tentacle curling up from Pupo's side to scratch the top of its head, in two strokes.
+// A front tentacle rising from the bottom of Pupo's body, in front of its edge, to scratch its crown in two strokes.
 const SCRATCH_ARM_UP = [
-  '.....3333...',
-  '....312213..',
-  '...3113333..',
-  '..313.......',
-  '.3113.......',
-  '.313........',
-  '.313........',
-  '.3113.......',
-  '..3113......',
+  '...3333.........',
+  '..322223........',
+  '..32333.........',
+  '..323...........',
+  '..323...........',
+  '..323...........',
+  '..323...........',
+  '..3223..........',
+  '...323..........',
+  '...3223.........',
+  '....323.........',
+  '....3223........',
 ]
 const SCRATCH_ARM_DOWN = [
-  '......3333..',
-  '.....312213.',
-  '...31113333.',
-  '..313.......',
-  '.3113.......',
-  '.313........',
-  '.313........',
-  '.3113.......',
-  '..3113......',
+  '....3333........',
+  '...322223.......',
+  '..322333........',
+  '..323...........',
+  '..323...........',
+  '..323...........',
+  '..323...........',
+  '..3223..........',
+  '...323..........',
+  '...3223.........',
+  '....323.........',
+  '....3223........',
 ]
 // Little scratch marks that flicker above the hand.
 const SCRATCH_MARKS_A = ['3...3']
@@ -124,7 +132,7 @@ const typing = (leftUp: boolean): PupoFrame => [
 
 const scratching = (eyes: string[], down: boolean): PupoFrame => [
   body(eyes),
-  { sprite: down ? SCRATCH_ARM_DOWN : SCRATCH_ARM_UP, x: BODY_X - 3, y: BODY_Y },
+  { sprite: down ? SCRATCH_ARM_DOWN : SCRATCH_ARM_UP, x: BODY_X, y: BODY_Y },
   { sprite: down ? SCRATCH_MARKS_B : SCRATCH_MARKS_A, x: BODY_X + 2, y: BODY_Y - 1 },
 ]
 
@@ -136,10 +144,10 @@ export const PUPO_FRAMES: Record<PupoMood, PupoFrame[]> = {
     scratching(THINK_UP, true),
     scratching(THINK_UP, false),
     scratching(THINK_UP, true),
-    scratching(THINK_LEFT, false),
-    scratching(THINK_LEFT, true),
-    scratching(THINK_LEFT, false),
-    scratching(BLINK, true),
+    scratching(THINK_RIGHT, false),
+    scratching(THINK_RIGHT, true),
+    scratching(THINK_RIGHT, false),
+    scratching(THINK_BLINK, true),
   ],
   typing: [typing(true), typing(false)],
   happy: [[body(HAPPY)], [body(HOP)]],
