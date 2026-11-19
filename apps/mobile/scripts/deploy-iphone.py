@@ -166,10 +166,10 @@ def deploy(source, root, log, lock_fd):
         (mobile / 'ios/Podfile').exists() and (mobile / 'ios/Pods/Manifest.lock').exists(),
         prebuild,
     )
-    device = os.environ.get('PULPO_IOS_DEVICE', 'Isaac iphone')
+    device = os.environ.get('PULPO_IOS_DEVICE', 'iPhone')
     run(['npx', '--no-install', 'expo', 'run:ios', '--device', device,
          '--configuration', configuration, '--no-bundler'])
-    run(['xcrun', 'devicectl', 'device', 'process', 'launch', '--device', device, 'com.isaacthoman.pulpo'])
+    run(['xcrun', 'devicectl', 'device', 'process', 'launch', '--device', device, 'com.davidpopescu.pulpo'])
 
 
 def main():

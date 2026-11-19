@@ -34,11 +34,11 @@ const config: ExpoConfig = {
   userInterfaceStyle: 'automatic',
   experiments: { typedRoutes: true },
   ios: {
-    bundleIdentifier: 'com.isaacthoman.pulpo',
+    bundleIdentifier: 'com.davidpopescu.pulpo',
     buildNumber: iosBuildNumber,
     supportsTablet: true,
     requireFullScreen: false,
-    appleTeamId: 'PX72AL9366',
+    appleTeamId: 'B7K7PTT789',
     icon: './assets/Pulpo.icon',
     associatedDomains: ['applinks:pulpo.baby', ...passkeyDomains.map((domain) => `webcredentials:${domain}`)],
     infoPlist: {

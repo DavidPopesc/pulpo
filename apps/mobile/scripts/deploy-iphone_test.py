@@ -231,7 +231,7 @@ class DeploymentTests(unittest.TestCase):
     def test_surviving_build_child_keeps_lock_when_runner_is_killed(self):
         started, release = self.directory / 'started', self.directory / 'release'
         environment = dict(self.env, STARTED=str(started), RELEASE=str(release),
-                           HOLD_COMMAND='npx --no-install expo run:ios --device Isaac iphone --configuration Release --no-bundler')
+                           HOLD_COMMAND='npx --no-install expo run:ios --device iPhone --configuration Release --no-bundler')
         process = subprocess.Popen(['bash', str(self.source / 'apps/mobile/scripts/deploy-iphone.sh')],
                                    env=environment, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         try:
