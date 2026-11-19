@@ -38,7 +38,6 @@ const config: ExpoConfig = {
     buildNumber: iosBuildNumber,
     supportsTablet: true,
     requireFullScreen: false,
-    appleTeamId: 'B7K7PTT789',
     icon: './assets/Pulpo.icon',
     associatedDomains: ['applinks:pulpo.baby', ...passkeyDomains.map((domain) => `webcredentials:${domain}`)],
     infoPlist: {

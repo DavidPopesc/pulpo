@@ -166,6 +166,14 @@ def deploy(source, root, log, lock_fd):
         (mobile / 'ios/Podfile').exists() and (mobile / 'ios/Pods/Manifest.lock').exists(),
         prebuild,
     )
+    # Expo passes -allowProvisioningUpdates only when the project has no team yet, so clear it every
+    # run: Expo then signs with this Mac's certificate and Xcode can create or renew the profile.
+    project = mobile / 'ios/Pulpo.xcodeproj/project.pbxproj'
+    if project.exists():
+        project.write_text(''.join(
+            line for line in project.read_text().splitlines(keepends=True)
+            if not line.strip().startswith('DEVELOPMENT_TEAM = ')
+        ))
     device = os.environ.get('PULPO_IOS_DEVICE', 'iPhone')
     run(['npx', '--no-install', 'expo', 'run:ios', '--device', device,
          '--configuration', configuration, '--no-bundler'])
