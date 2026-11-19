@@ -4,6 +4,8 @@ import { localComposerDraftId, mergePendingAttachments } from '@pulpo/client-cor
 import { ShelvedDrafts } from './ShelvedDrafts'
 import { ComposerTray } from './ComposerTray'
 import { ModelWarningBanner } from './ModelWarningBanner'
+import { PupoBuddy } from './PupoBuddy'
+import { pupoMoodForMessage } from './pupo-sprites'
 import { webShelf, shelfDraftAttachments } from '@/lib/local-first/shelf'
 import type { ShelfAttachment } from '@pulpo/client-core'
 import { useComposerSync } from './use-composer-sync'
@@ -260,6 +262,12 @@ export function Composer({
     return unfinished.find((message) => s.streamingIds.includes(message.id))?.id
       ?? unfinished.at(-1)?.id
       ?? null
+  })
+  const pupoMood = useChat((s) => {
+    if (!chatId) return 'idle'
+    const chat = s.chats.find((item) => item.id === chatId)
+    const streaming = chat?.messages.find((message) => message.role === 'assistant' && !message.done && s.streamingIds.includes(message.id))
+    return streaming ? pupoMoodForMessage(streaming) : 'idle'
   })
   const stopStreaming = useChat((s) => s.stopStreaming)
   const queuedMessages = useChat((s) => chatId
@@ -1033,7 +1041,8 @@ export function Composer({
   }
 
   return (
-    <div inert={handoffBusy} className={cn('w-full min-w-0', centered && 'px-2')}>
+    <div inert={handoffBusy} className={cn('relative w-full min-w-0', centered && 'px-2')}>
+      <PupoBuddy mood={pupoMood} className={cn('absolute bottom-full -mb-px', centered ? 'right-6' : 'right-4')} />
       {dragging && (
         <div className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center bg-black/35 backdrop-grayscale" role="status">
           <div className="flex flex-col items-center gap-3 text-center text-white drop-shadow-sm">
