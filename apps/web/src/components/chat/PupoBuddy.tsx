@@ -52,8 +52,7 @@ export function PupoBuddy({ mood, className }: { mood: Exclude<PupoMood, 'happy'
   const tick = animation.mood === shown ? animation.tick : 0
 
   const frames = PUPO_FRAMES[shown]
-  // With reduced motion, hold the most telling pose: the full thought cloud rather than its first dot.
-  const index = reducedMotion ? (shown === 'thinking' ? frames.length - 2 : 0) : tick % frames.length
+  const index = reducedMotion ? 0 : tick % frames.length
   const rects = useMemo(() => frameRects(frames[index]), [frames, index])
 
   return (

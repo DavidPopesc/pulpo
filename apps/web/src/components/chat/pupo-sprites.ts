@@ -1,5 +1,5 @@
 // Pupo, "Original 4 · even" design from the Tomagochi-like Character project.
-// Pixels: '.' transparent, '1' light, '2' mid, '3' ink, '4' laptop, '5' laptop edge, '6' laptop logo, 'w' bubble.
+// Pixels: '.' transparent, '1' light, '2' mid, '3' ink, '4' laptop, '5' laptop edge, '6' laptop logo.
 
 export type PupoMood = 'idle' | 'thinking' | 'typing' | 'happy'
 
@@ -10,15 +10,14 @@ export const PUPO_PALETTE: Record<string, string> = {
   '4': '#c9ccd3',
   '5': '#5b5f6b',
   '6': '#f4f5f7',
-  w: '#ffffff',
 }
 
-export const PUPO_WIDTH = 26
-export const PUPO_HEIGHT = 23
-// Where the 16x16 Pupo sits inside the scene; the free space up and to the left holds thought bubbles.
+export const PUPO_WIDTH = 19
+export const PUPO_HEIGHT = 17
+// Where the 16x16 Pupo sits inside the scene; the free space up and to the left holds the scratching arm.
 // The sprite's last row is always empty, so the feet land on the scene's bottom edge.
-const BODY_X = 10
-const BODY_Y = 8
+const BODY_X = 3
+const BODY_Y = 2
 
 const BLANK_EYES = '..311111111113..'
 
@@ -76,15 +75,32 @@ const LAPTOP = [
 const LAPTOP_BASE = ['5555555555555555']
 const HAND = ['.33.', '3223', '3223']
 
-const BUBBLE_SMALL = ['33', '33']
-const BUBBLE_MID = ['.3.', '3w3', '.3.']
-const cloud = (dots: number) => [
-  '.3333333.',
-  '3wwwwwww3',
-  `3w${[0, 1, 2].map((i) => (i < dots ? '3' : 'w')).join('w')}w3`,
-  '3wwwwwww3',
-  '.3333333.',
+// A tentacle curling up from Pupo's side to scratch the top of its head, in two strokes.
+const SCRATCH_ARM_UP = [
+  '.....3333...',
+  '....312213..',
+  '...3113333..',
+  '..313.......',
+  '.3113.......',
+  '.313........',
+  '.313........',
+  '.3113.......',
+  '..3113......',
 ]
+const SCRATCH_ARM_DOWN = [
+  '......3333..',
+  '.....312213.',
+  '...31113333.',
+  '..313.......',
+  '.3113.......',
+  '.313........',
+  '.313........',
+  '.3113.......',
+  '..3113......',
+]
+// Little scratch marks that flicker above the hand.
+const SCRATCH_MARKS_A = ['3...3']
+const SCRATCH_MARKS_B = ['..3..']
 
 export interface PupoLayer {
   sprite: string[]
@@ -104,28 +120,24 @@ const typing = (leftUp: boolean): PupoFrame => [
   { sprite: LAPTOP_BASE, x: BODY_X, y: BODY_Y + 14 },
 ]
 
-const trail = [
-  { sprite: BUBBLE_SMALL, x: 12, y: 7 },
-  { sprite: BUBBLE_MID, x: 9, y: 4 },
-]
-const thinking = (eyes: string[], bubbles: number, dots = 0): PupoFrame => [
+const scratching = (eyes: string[], down: boolean): PupoFrame => [
   body(eyes),
-  ...trail.slice(0, bubbles),
-  ...(bubbles > 2 ? [{ sprite: cloud(dots), x: 0, y: 0 }] : []),
+  { sprite: down ? SCRATCH_ARM_DOWN : SCRATCH_ARM_UP, x: BODY_X - 3, y: BODY_Y },
+  { sprite: down ? SCRATCH_MARKS_B : SCRATCH_MARKS_A, x: BODY_X + 2, y: BODY_Y - 1 },
 ]
 
 export const PUPO_FRAMES: Record<PupoMood, PupoFrame[]> = {
   idle: [IDLE, IDLE, IDLE, IDLE, IDLE, BLINK, IDLE, IDLE, IDLE, IDLE, IDLE, IDLE, IDLE, HOP, IDLE, IDLE, IDLE, BLINK, IDLE, IDLE]
     .map((sprite) => [body(sprite)]),
   thinking: [
-    thinking(THINK_LEFT, 1),
-    thinking(THINK_LEFT, 2),
-    thinking(THINK_LEFT, 3, 0),
-    thinking(THINK_LEFT, 3, 1),
-    thinking(THINK_UP, 3, 2),
-    thinking(THINK_UP, 3, 3),
-    thinking(THINK_LEFT, 3, 3),
-    thinking(BLINK, 3, 3),
+    scratching(THINK_UP, false),
+    scratching(THINK_UP, true),
+    scratching(THINK_UP, false),
+    scratching(THINK_UP, true),
+    scratching(THINK_LEFT, false),
+    scratching(THINK_LEFT, true),
+    scratching(THINK_LEFT, false),
+    scratching(BLINK, true),
   ],
   typing: [typing(true), typing(false)],
   happy: [[body(HAPPY)], [body(HOP)]],
@@ -133,7 +145,7 @@ export const PUPO_FRAMES: Record<PupoMood, PupoFrame[]> = {
 
 export const PUPO_FRAME_MS: Record<PupoMood, number> = {
   idle: 300,
-  thinking: 380,
+  thinking: 200,
   typing: 140,
   happy: 220,
 }
