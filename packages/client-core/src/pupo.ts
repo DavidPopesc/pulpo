@@ -1,6 +1,6 @@
 // Pupo, the chat buddy that perches on the composer (web and mobile).
 // "Original 4 · even" design from the Tomagochi-like Character project.
-// Pixels: '.' transparent, '1' light, '2' mid, '3' ink, '4' laptop, '5' laptop edge, '6' laptop logo, '0' bubble.
+// Pixels: '.' transparent, '1' light, '2' mid, '3' ink, '4' laptop, '5' laptop edge, '6' laptop logo.
 
 export type PupoMood = 'idle' | 'thinking' | 'typing' | 'happy'
 
@@ -11,15 +11,14 @@ export const PUPO_PALETTE: Record<string, string> = {
   '4': '#c9ccd3',
   '5': '#5b5f6b',
   '6': '#f4f5f7',
-  '0': '#ffffff',
 }
 
-export const PUPO_WIDTH = 22
-export const PUPO_HEIGHT = 22
-// Where the 16x16 Pupo sits inside the scene; the space above and to the right holds the thought bubble.
+export const PUPO_WIDTH = 16
+export const PUPO_HEIGHT = 15
+// Where the 16x16 Pupo sits inside the scene.
 // The sprite's last row is always empty, so the feet land on the scene's bottom edge.
 const BODY_X = 0
-const BODY_Y = 7
+const BODY_Y = 0
 
 const BLANK_EYES = '..311111111113..'
 
@@ -97,16 +96,6 @@ const THINK_TAP = [
   '................',
 ]
 const THINK_REST = THINK_TAP.map((row, y) => (y === 7 ? '..311111111113..' : y === 8 ? '..311111333113..' : row))
-// A thought bubble above Pupo's head whose dots count up.
-const bubble = (dots: number) => [
-  '..333333333.',
-  '.30000000003',
-  ['.30300000003', '.30300300003', '.30300300303'][dots - 1]!,
-  '.30000000003',
-  '..333333333.',
-  '.33.........',
-  '3...........',
-]
 
 export interface PupoLayer {
   sprite: string[]
@@ -126,16 +115,10 @@ const typing = (leftUp: boolean): PupoFrame => [
   { sprite: LAPTOP_BASE, x: BODY_X, y: BODY_Y + 14 },
 ]
 
-// The pose holds for three ticks while the bubble's dots step every two.
-const thinking = (tick: number): PupoFrame => [
-  body(tick < 3 ? THINK_TAP : THINK_REST),
-  { sprite: bubble(1 + Math.floor(tick / 2)), x: BODY_X + 10, y: BODY_Y - 7 },
-]
-
 export const PUPO_FRAMES: Record<PupoMood, PupoFrame[]> = {
   idle: [IDLE, IDLE, IDLE, IDLE, IDLE, BLINK, IDLE, IDLE, IDLE, IDLE, IDLE, IDLE, IDLE, HOP, IDLE, IDLE, IDLE, BLINK, IDLE, IDLE]
     .map((sprite) => [body(sprite)]),
-  thinking: [0, 1, 2, 3, 4, 5].map(thinking),
+  thinking: [THINK_TAP, THINK_TAP, THINK_TAP, THINK_REST, THINK_REST, THINK_REST].map((sprite) => [body(sprite)]),
   typing: [typing(true), typing(false)],
   happy: [[body(HAPPY)], [body(HOP)]],
 }
