@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PUPO_FRAMES, PUPO_HEIGHT, PUPO_WIDTH, pupoMoodForMessage } from './pupo.js'
+import { PUPO_FRAMES, PUPO_HEIGHT, PUPO_WIDTH, pupoFrameIndex, pupoInterludes, pupoMoodForMessage } from './pupo.js'
 
 describe('Pupo buddy', () => {
   it('thinks while reasoning or calling tools and types once answer text streams', () => {
@@ -9,6 +9,16 @@ describe('Pupo buddy', () => {
     expect(pupoMoodForMessage({ content: '', outputItems: [{ type: 'reasoning' }] })).toBe('thinking')
     expect(pupoMoodForMessage({ content: 'Let me check.', outputItems: [{ type: 'message' }, { type: 'function_call' }] })).toBe('thinking')
     expect(pupoMoodForMessage({ content: 'Done', outputItems: [{ type: 'reasoning' }, { type: 'message' }] })).toBe('typing')
+  })
+
+  it('pulls the laptop out before typing and puts it away after', () => {
+    expect(pupoInterludes('thinking', 'typing')).toEqual(['unpack'])
+    expect(pupoInterludes('idle', 'typing')).toEqual(['unpack'])
+    expect(pupoInterludes('typing', 'thinking')).toEqual(['pack'])
+    expect(pupoInterludes('typing', 'idle')).toEqual(['pack', 'happy'])
+    expect(pupoInterludes('idle', 'thinking')).toEqual([])
+    expect(pupoFrameIndex('unpack', 99)).toBe(PUPO_FRAMES.unpack.length - 1)
+    expect(pupoFrameIndex('typing', 3)).toBe(1)
   })
 
   it('paints every frame inside the scene', () => {

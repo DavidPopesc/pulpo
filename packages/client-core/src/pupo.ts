@@ -2,7 +2,10 @@
 // "Original 4 · even" design from the Tomagochi-like Character project.
 // Pixels: '.' transparent, '1' light, '2' mid, '3' ink, '4' laptop, '5' laptop edge, '6' laptop logo.
 
-export type PupoMood = 'idle' | 'thinking' | 'typing' | 'happy'
+/** What the chat is doing, which Pupo settles into. */
+export type PupoState = 'idle' | 'thinking' | 'typing'
+/** Everything Pupo can show: the states plus the one-shot moods played between them. */
+export type PupoMood = PupoState | 'happy' | 'unpack' | 'pack'
 
 export const PUPO_PALETTE: Record<string, string> = {
   '1': '#d7b8f5',
@@ -74,6 +77,11 @@ const LAPTOP = [
 ]
 const LAPTOP_BASE = ['5555555555555555']
 const HAND = ['.33.', '3223', '3223']
+const HAND_DOWN = [...HAND].reverse()
+// The laptop folded shut, small enough for a pocket.
+const FOLDED = ['555555', '544465', '555555']
+const LID_CLOSED = ['.55555555555555.']
+const LID_HALF = [LAPTOP[0]!, LAPTOP[2]!, LAPTOP[3]!]
 
 // Thinking, from the Tomagochi project: eyes up and away, a "hmm" mouth, and the far-right leg
 // lifted across the body to tap the chin.
@@ -115,12 +123,46 @@ const typing = (leftUp: boolean): PupoFrame => [
   { sprite: LAPTOP_BASE, x: BODY_X, y: BODY_Y + 14 },
 ]
 
+// Pulling the laptop out: reach into the right-side pocket, lift the folded laptop up,
+// set it down in front, and flip the lid open. Packing it away plays this backwards.
+const REACH: PupoFrame = [
+  body(lookAt([7, 8], [6, 11])),
+  { sprite: HAND_DOWN, x: BODY_X + 12, y: BODY_Y + 10 },
+]
+const GRAB: PupoFrame = [
+  body(lookAt([7, 8], [6, 11])),
+  { sprite: FOLDED, x: BODY_X + 10, y: BODY_Y + 11 },
+  { sprite: HAND_DOWN, x: BODY_X + 12, y: BODY_Y + 9 },
+]
+const LIFT: PupoFrame = [
+  body(lookAt([5, 6], [6, 11], '..311133331113..')),
+  { sprite: FOLDED, x: BODY_X + 10, y: BODY_Y + 6 },
+  { sprite: HAND, x: BODY_X + 12, y: BODY_Y + 4 },
+]
+const SET_DOWN: PupoFrame = [
+  body(LOOK_DOWN),
+  { sprite: HAND, x: BODY_X + 1, y: BODY_Y + 10 },
+  { sprite: HAND, x: BODY_X + 11, y: BODY_Y + 10 },
+  { sprite: LID_CLOSED, x: BODY_X, y: BODY_Y + 13 },
+  { sprite: LAPTOP_BASE, x: BODY_X, y: BODY_Y + 14 },
+]
+const LID_UP: PupoFrame = [
+  body(LOOK_DOWN),
+  { sprite: HAND, x: BODY_X + 1, y: BODY_Y + 8 },
+  { sprite: HAND, x: BODY_X + 11, y: BODY_Y + 8 },
+  { sprite: LID_HALF, x: BODY_X + 1, y: BODY_Y + 11 },
+  { sprite: LAPTOP_BASE, x: BODY_X, y: BODY_Y + 14 },
+]
+const UNPACK = [REACH, GRAB, LIFT, LIFT, SET_DOWN, LID_UP]
+
 export const PUPO_FRAMES: Record<PupoMood, PupoFrame[]> = {
   idle: [IDLE, IDLE, IDLE, IDLE, IDLE, BLINK, IDLE, IDLE, IDLE, IDLE, IDLE, IDLE, IDLE, HOP, IDLE, IDLE, IDLE, BLINK, IDLE, IDLE]
     .map((sprite) => [body(sprite)]),
   thinking: [THINK_TAP, THINK_TAP, THINK_TAP, THINK_REST, THINK_REST, THINK_REST].map((sprite) => [body(sprite)]),
   typing: [typing(true), typing(false)],
   happy: [[body(HAPPY)], [body(HOP)]],
+  unpack: UNPACK,
+  pack: [...UNPACK].reverse().slice(0, -1),
 }
 
 export const PUPO_FRAME_MS: Record<PupoMood, number> = {
@@ -128,10 +170,36 @@ export const PUPO_FRAME_MS: Record<PupoMood, number> = {
   thinking: 300,
   typing: 140,
   happy: 220,
+  unpack: 150,
+  pack: 130,
+}
+
+export type PupoInterlude = Exclude<PupoMood, PupoState>
+
+/** How long each one-shot mood plays before Pupo moves on. */
+export const PUPO_INTERLUDE_MS: Record<PupoInterlude, number> = {
+  happy: 1600,
+  unpack: PUPO_FRAMES.unpack.length * PUPO_FRAME_MS.unpack,
+  pack: PUPO_FRAMES.pack.length * PUPO_FRAME_MS.pack,
+}
+
+/** One-shot moods to play, in order, when Pupo goes from one state to another. */
+export function pupoInterludes(from: PupoState, to: PupoState): PupoInterlude[] {
+  if (from === to) return []
+  if (to === 'typing') return ['unpack']
+  if (from !== 'typing') return []
+  // Put the laptop away, then celebrate a finished answer.
+  return to === 'idle' ? ['pack', 'happy'] : ['pack']
+}
+
+/** The frame to show on a tick: states loop, while unpacking and packing hold their last frame. */
+export function pupoFrameIndex(mood: PupoMood, tick: number): number {
+  const count = PUPO_FRAMES[mood].length
+  return mood === 'unpack' || mood === 'pack' ? Math.min(tick, count - 1) : tick % count
 }
 
 /** Thinking while reasoning or using tools; typing once the latest output is answer text. */
-export function pupoMoodForMessage(message: { content: string; outputItems?: unknown[] } | null | undefined): Exclude<PupoMood, 'happy'> {
+export function pupoMoodForMessage(message: { content: string; outputItems?: unknown[] } | null | undefined): PupoState {
   if (!message) return 'idle'
   const last = message.outputItems?.at(-1) as { type?: unknown } | undefined
   if (last && typeof last.type === 'string') return last.type === 'message' ? 'typing' : 'thinking'
